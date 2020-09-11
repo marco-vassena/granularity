@@ -168,17 +168,18 @@ mutual
   fg2cg {pc = pc} (New {ℓ = ℓ} {Σ' = Σ'} {μ' = μ'} {r = r} x) =
     ToLabeled
       (Bindᶠ (fg2cgᶠ x)
-      ⌞ ⇓-with′ (New (Var here) (FG.step-⊑ x)) eq ⌟ᶠ)
+      ⌞ ⇓-with′ (New (Var here) _) {!eq!} ⌟ᶠ)
+      -- (Bindᶠ ⌞ Unlabel (Var here) (sym (ub (FG.step-⊑ x))) ⌟ᶠ
 
-   where memory-≡ = ∷ᴿ-≡ r (Σ' ℓ)
-         value-≡ = cong₂ Refᴵ refl (∥ Σ' ∥-≡ ℓ)
+   where memory-≡ = ∷ᴿ-≡ r {!!} -- (Σ' ℓ)
+         value-≡ = cong₂ Refᴵ {!!} {!!} -- (∥ Σ' ∥-≡ ℓ)
          eq = cong₂ (λ Σ v → ⟨ Σ , ⟪ μ' ⟫ᴴ , pc , v ⟩) (CG.store-≡ (update-≡ˢ memory-≡)) value-≡
 
   fg2cg (Read x x₁ refl) =
     ToLabeled
       (Bindᶠ (fg2cgᶠ x)
       (Bindᶠ ⌞ Unlabel (Var here) (sym (ub (step-⊑ x))) ⌟ᶠ
-      ⌞ Read (Var here) ⟪ x₁ ⟫∈ᴹ (sym-⊔ _ _) ⌟ᶠ))
+      {!!} )) -- ⌞ Read (Var here) ⟪ x₁ ⟫∈ᴹ (sym-⊔ _ _) ⌟ᶠ))
 
   fg2cg {pc = pc} (Write {μ₃ = μ₃} {ℓ₁ = ℓ₁} x p x₁ ℓ₂⊑ℓ x₂) =
     Bind
@@ -186,7 +187,8 @@ mutual
         (Bindᶠ (fg2cgᶠ x)
         (Bindᶠ (↑¹-⇓ᶠ (fg2cgᶠ x₁))
         (Bindᶠ ⌞ Unlabel (Var (there here)) refl ⌟ᶠ
-        ⌞ ⇓-with′ (Write (Var here) (Var (there here)) ⊑₁ ℓ₂⊑ℓ (write-≡ᴹ x₂)) eq ⌟ᶠ)))))
+        {!⌞ ⇓-with′ (Write (Var here) ? ⊑₁ ? (write-≡ᴹ x₂)) eq ⌟ᶠ!} )))))
+        -- ⌞ ⇓-with′ (Write (Var here) (Var (there here)) ⊑₁ ℓ₂⊑ℓ (write-≡ᴹ x₂)) eq ⌟ᶠ)))))
     (ToLabeledᶠ ⌞ Return Unit ⌟ᶠ)
 
     where eq = cong (λ Σ → ⟨ Σ , ⟪ μ₃ ⟫ᴴ , pc ⊔ ℓ₁ , （） ⟩) (CG.store-≡ (update-≡ˢ refl))
@@ -200,25 +202,25 @@ mutual
       (Bindᶠ ⌞ Unlabel (Var here) (sym (ub (step-⊑ x))) ⌟ᶠ
       ⌞ Unlabel (Var here) eq ⌟ᶠ))
 
-  fg2cg (LabelOfRef-FS x ∈₁ refl) =
-    ToLabeled
-      (Bindᶠ (fg2cgᶠ x)
-      (Bindᶠ ⌞ Unlabel (Var here) (sym (ub pc⊑ℓ')) ⌟ᶠ
-      ⌞ LabelOfRef-FS (Var here) ⟪ ∈₁ ⟫∈ᴴ refl ⌟ᶠ))
-    where pc⊑ℓ' = FG.step-⊑ x
+  fg2cg (LabelOfRef-FS x ∈₁ refl) = {!!}
+    -- ToLabeled
+    --   (Bindᶠ (fg2cgᶠ x)
+    --   (Bindᶠ ⌞ Unlabel (Var here) (sym (ub pc⊑ℓ')) ⌟ᶠ
+    --   ⌞ LabelOfRef-FS (Var here) ⟪ ∈₁ ⟫∈ᴴ refl ⌟ᶠ))
+    -- where pc⊑ℓ' = FG.step-⊑ x
 
   fg2cg {pc = pc} (New-FS {Σ' = Σ'} {μ' = μ'} {v = v} x) =
     ToLabeled
       (Bindᶠ (fg2cgᶠ x)
-      ⌞ ⇓-with′ (New-FS (Var here) (step-⊑ x)) eq ⌟ᶠ)
+      {!!}) -- ⌞ ⇓-with′ (New-FS (Var here) (step-⊑ x)) eq ⌟ᶠ)
    where value-≡ = cong Refˢ ∥ μ' ∥-≡ᴴ
          eq = cong₂ (λ μ v → ⟨ ⟪ Σ' ⟫ˢ , μ , pc , v ⟩) (snocᴴ-≡ v μ') value-≡
 
-  fg2cg (Read-FS x x₁ refl) =
-    ToLabeled
-      (Bindᶠ (fg2cgᶠ x)
-      (Bindᶠ ⌞ Unlabel (Var here) (sym (ub (step-⊑ x))) ⌟ᶠ
-      ⌞ Read-FS (Var here) ⟪ x₁ ⟫∈ᴴ refl ⌟ᶠ))
+  fg2cg (Read-FS x x₁ refl) = {!!}
+    -- ToLabeled
+    --   (Bindᶠ (fg2cgᶠ x)
+    --   (Bindᶠ ⌞ Unlabel (Var here) (sym (ub (step-⊑ x))) ⌟ᶠ
+    --   ⌞ Read-FS (Var here) ⟪ x₁ ⟫∈ᴴ refl ⌟ᶠ))
 
   fg2cg {pc = pc} (Write-FS {Σ₃ = Σ₃} {ℓ = ℓ} {ℓ₂ = ℓ₂} x x₁ ∈₁ ⊑₁ refl w) =
     Bind
@@ -226,7 +228,7 @@ mutual
         (Bindᶠ (fg2cgᶠ x)
         (Bindᶠ (↑¹-⇓ᶠ (fg2cgᶠ x₁))
         (Bindᶠ ⌞ Unlabel (Var (there here)) refl ⌟ᶠ
-        ⌞ ⇓-with′ (Write-FS (Var here) (Var (there here)) ⟪ ∈₁ ⟫∈ᴴ ⊑₂ eq' (write-≡ᴴ w)) eq ⌟ᶠ)))))
+        {!!}))))) -- ⌞ ⇓-with′ (Write-FS (Var here) (Var (there here)) ⟪ ∈₁ ⟫∈ᴴ ⊑₂ eq' (write-≡ᴴ w)) eq ⌟ᶠ)))))
     (ToLabeledᶠ ⌞ Return Unit ⌟ᶠ)
     where eq = cong (λ μ → ⟨ ⟪ Σ₃ ⟫ˢ , μ , pc ⊔ ℓ , （） ⟩) refl
           ⊑₂ = trans-⊑ (join-⊑' (step-⊑ x) refl-⊑) ⊑₁

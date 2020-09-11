@@ -85,20 +85,23 @@ mutual
   ⟪ new e ⟫ᵀ =
     toLabeled
       ⌞ bind ⟪ e ⟫ᴱ
-      ⌞ new (var here) ⌟ᵀ ⌟ᵀ
+--      ⌞ bind ⌞ unlabel (var here) ⌟ᵀ
+      ⌞ new (var here) ⌟ᵀ ⌟ᵀ -- ⌟ᵀ
 
   ⟪ ! e ⟫ᵀ =
     toLabeled
       ⌞ bind ⟪ e ⟫ᴱ
       ⌞ bind ⌞ unlabel (var here) ⌟ᵀ
-      ⌞ ! (var here) ⌟ᵀ ⌟ᵀ ⌟ᵀ
+      ⌞ bind ⌞ ! (var here) ⌟ᵀ
+      ⌞ unlabel (var here) ⌟ᵀ ⌟ᵀ ⌟ᵀ ⌟ᵀ
 
   ⟪ e ≔ e₁ ⟫ᵀ =
     bind ⌞ toLabeled
          ⌞ bind ⟪ e ⟫ᴱ
          ⌞ bind (⟪ e₁ ⟫ᴱ ↑¹)
          ⌞ bind ⌞ unlabel (var (there here)) ⌟ᵀ
-         ⌞ var here ≔ var (there here) ⌟ᵀ ⌟ᵀ ⌟ᵀ ⌟ᵀ ⌟ᵀ
+         -- ⌞ bind ⌞ unlabel (var (there here)) ⌟ᵀ
+         ⌞ var here ≔ var (there here) ⌟ᵀ ⌟ᵀ ⌟ᵀ ⌟ᵀ ⌟ᵀ -- ⌟ᵀ
     ⌞ toLabeled ⌞ return （） ⌟ᵀ ⌟ᵀ
 
   ⟪ Id e ⟫ᵀ = toLabeled ⌞ ⟪ e ⟫ᵀ ⌟ᵀ
@@ -154,6 +157,7 @@ import Data.Product as P
 
 -- open import Generic.Heap.Convert {FG.Ty} {CG.Ty} {FG.Value} {CG.LValue} ⟪_⟫ᵗ′ ⟪_⟫ᴸ public
 
+-- TODO: here we probably need to adapt the translation for memories.
 open import Generic.PState.Convert {FG.Ty} {CG.Ty} ⟪_⟫ᵗ′ ⟪_⟫ᵗ′ {FG.Raw} {CG.Value} {FG.Value} {CG.LValue} (flip $ const ⟪_⟫ᴿ) (flip $ const ⟪_⟫ᴸ) public
 
 --------------------------------------------------------------------------------
