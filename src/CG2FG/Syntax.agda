@@ -62,15 +62,14 @@ mutual
   ⟦ labelOf e ⟧ᵀ = fst (unId ⟦ e ⟧ᴱ)
   ⟦ getLabel ⟧ᵀ = getLabel
   ⟦ taint e ⟧ᵀ = taint ⟦ e ⟧ᴱ （）
-  ⟦ new e ⟧ᵀ = new (Λ (taint ( (fst (var here))) (snd (var here))) ∘ (unId ⟦ e ⟧ᴱ))
+  ⟦ new e ⟧ᵀ = new ⟦ e ⟧ᴱ -- (Λ (taint ( (fst (var here))) (snd (var here))) ∘ (unId ⟦ e ⟧ᴱ))
   ⟦ ! e ⟧ᵀ = ! ⟦ e ⟧ᴱ
   -- For FI refs the tainting occurs "automatically" because the label of the reference is fixed
-  ⟦_⟧ᵀ  (_≔_ {s = I} e e₁) =
-    ⟦ e ⟧ᴱ ≔ snd (unId ⟦ e₁ ⟧ᴱ)
-
+  ⟦_⟧ᵀ  (_≔_ e e₁) =
+    ⟦ e ⟧ᴱ ≔ ⟦ e₁ ⟧ᴱ -- snd (unId ⟦ e₁ ⟧ᴱ)
   -- For FS refs this is not the case and we need to explicitly taint the raw value (like we did for new).
-  ⟦_⟧ᵀ (_≔_ {s = S} e e₁) =
-    ⟦ e ⟧ᴱ ≔ ((Λ (taint (fst (var here)) (snd (var here)))) ∘ unId ⟦ e₁ ⟧ᴱ )
+  -- ⟦_⟧ᵀ (_≔_ {s = S} e e₁) =
+  --   ⟦ e ⟧ᴱ ≔ ((Λ (taint (fst (var here)) (snd (var here)))) ∘ unId ⟦ e₁ ⟧ᴱ )
 
   ⟦ labelOfRef e ⟧ᵀ = labelOfRef ⟦ e ⟧ᴱ
 

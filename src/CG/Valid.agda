@@ -216,8 +216,8 @@ mutual
 
   validᴼ-⇓ (LabelOfRef x eq) (isVᴾ ∧ isVᴱ) = isVᴾ ∧ tt
 
-  validᴼ-⇓ (New-FS {μ = μ} {ℓ = ℓ} {v = v}  x _) (⟨ isVˢ , isVᴴ ⟩ ∧ isVᴱ) = ⟨ isVˢ′ , isVᴴ′ ⟩ ∧ ≤₁
-    where lv = v ∧ ℓ
+  validᴼ-⇓ (New-FS {μ = μ} {pc = pc} {v = v}  x _) (⟨ isVˢ , isVᴴ ⟩ ∧ isVᴱ) = ⟨ isVˢ′ , isVᴴ′ ⟩ ∧ ≤₁
+    where lv = v ∧ pc
           eq = ∥snoc∥ μ lv
           ≤₁ : suc ∥ μ ∥ᴴ ≤ ∥ snocᴴ μ lv ∥ᴴ
           ≤₁ rewrite eq = s≤s ≤-refl

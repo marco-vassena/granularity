@@ -79,7 +79,7 @@ mutual
   step-≈ᴾ (Taint x x₁) pc⋤A = refl-≈ᴾ
 
   step-≈ᴾ {{isVᴾ}} (New x pc⊑ℓ) pc⋤A = ⟨ ≈ˢ , ≈ᴴ ⟩
-    where ≈ˢ = updateᴴ-≈ˢ {{ validˢ isVᴾ }} (trans-⋤ pc⊑ℓ pc⋤A)
+    where ≈ˢ = updateᴴ-≈ˢ {{ validˢ isVᴾ }} pc⋤A
           ≈ᴴ = refl-≈ᴴ {{ validᴴ isVᴾ }}
 
   step-≈ᴾ (Read x n∈M eq) pc⋤A = refl-≈ᴾ
@@ -96,9 +96,9 @@ mutual
 
   step-≈ᴾ (Read-FS x n∈μ eq) pc⋤A = refl-≈ᴾ
 
-  step-≈ᴾ {{isVᴾ}} (Write-FS x x₁ n∈μ ⊑₁ refl w) pc⋤A = ⟨ ≈ˢ , ≈ᴴ ⟩
+  step-≈ᴾ {{isVᴾ}} (Write-FS x x₁ n∈μ ⊑₁ _ w) pc⋤A = ⟨ ≈ˢ , ≈ᴴ ⟩
     where ≈ˢ = refl-≈ˢ {{ validˢ isVᴾ }}
-          v≈ = Labeledᴴ (trans-⋤ ⊑₁ pc⋤A) (join-⋤₁ pc⋤A)
+          v≈ = Labeledᴴ (trans-⋤ ⊑₁ pc⋤A) pc⋤A -- Labeledᴴ (trans-⋤ ⊑₁ pc⋤A) (join-⋤₁ pc⋤A)
           ≈ᴴ = writeᴴ-≈ᴴ {{ validᴴ isVᴾ }} n∈μ w v≈
 
   step-≈ᴾ (LabelOfRef-FS x n∈μ eq) pc⋤A = refl-≈ᴾ
@@ -193,17 +193,18 @@ mutual
   ... | yes pc'⊑A = _ ∧ refl-⊆ ∧  pcᴸ Σ₁≈Σ₂ pc'⊑A Unit
   ... | no pc'⋤A = _ ∧ refl-⊆ ∧ pcᴴ Σ₁≈Σ₂ pc'⋤A pc'⋤A
 
-  tiniᴸ {{isV₁ᴾ ∧ _}} {{isV₂ᴾ ∧ _}} (New x x₁) (New x₂ x₃) ⟨ Σ₁≈Σ₂ , μ≈ ⟩ θ₁≈θ₂ pc⊑A with tiniᴾ x x₂ θ₁≈θ₂
-  ... | Labeledᴸ ℓ⊑A v₁≈v₂ = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A r₁≈r₂
-    where M₁≈M₂ = getᴸ Σ₁≈Σ₂ ℓ⊑A
-          r₁≈r₂ = Refᴸ′ ℓ⊑A ∥ M₁≈M₂ ∥-≡
+  tiniᴸ {{isV₁ᴾ ∧ _}} {{isV₂ᴾ ∧ _}} (New x x₁) (New x₂ x₃) ⟨ Σ₁≈Σ₂ , μ≈ ⟩ θ₁≈θ₂ pc⊑A
+    = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A r₁≈r₂
+    where M₁≈M₂ = getᴸ Σ₁≈Σ₂ pc⊑A
+          r₁≈r₂ = Refᴸ′ pc⊑A ∥ M₁≈M₂ ∥-≡
+          v₁≈v₂ = tiniᴾ x x₂ θ₁≈θ₂
           Σ₁'≈Σ₂' = updateᴸ-≈ˢ Σ₁≈Σ₂ (new-≈ᴹ M₁≈M₂ v₁≈v₂)
-  ... | Labeledᴴ ℓ₁⋤A ℓ₂⋤A  = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A r₁≈r₂
-    where open _≈⟨_⟩ᴴ_ μ≈
-          r₁≈r₂ = Ref-Iᴴ ℓ₁⋤A ℓ₂⋤A
-          Σ₁≈Σ₁′ = updateᴴ-≈ˢ {{validˢ isV₁ᴾ}} ℓ₁⋤A
-          Σ₂≈Σ₂′ = updateᴴ-≈ˢ {{validˢ isV₂ᴾ}} ℓ₂⋤A
-          Σ₁'≈Σ₂' = square-≈ˢ-ι Σ₁≈Σ₂ Σ₁≈Σ₁′ Σ₂≈Σ₂′ ⊆ᴿ-ι ⊆ᴰ-ι
+  -- ... | Labeledᴴ ℓ₁⋤A ℓ₂⋤A  = _ ∧ refl-⊆ ∧ {!!} -- pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A r₁≈r₂
+  --   where open _≈⟨_⟩ᴴ_ μ≈
+  --         r₁≈r₂ = Ref-Iᴴ ℓ₁⋤A ℓ₂⋤A
+  --         Σ₁≈Σ₁′ = updateᴴ-≈ˢ {{validˢ isV₁ᴾ}} ℓ₁⋤A
+  --         Σ₂≈Σ₂′ = updateᴴ-≈ˢ {{validˢ isV₂ᴾ}} ℓ₂⋤A
+  --         Σ₁'≈Σ₂' = square-≈ˢ-ι Σ₁≈Σ₂ Σ₁≈Σ₁′ Σ₂≈Σ₂′ ⊆ᴿ-ι ⊆ᴰ-ι
 
   tiniᴸ (Read x₁ n∈M₁ refl) (Read x₂ n∈M₂ refl) Σ₁≈Σ₂ θ₁≈θ₂ pc⊑A with tiniᴾ x₁ x₂ θ₁≈θ₂
   ... | Ref-Iᴸ ℓ⊑A n = _ ∧ refl-⊆ ∧ pcᴸ Σ₁≈Σ₂ (join-⊑' pc⊑A ℓ⊑A) v≈
@@ -214,15 +215,15 @@ mutual
   ... | Ref-Iᴴ ℓ₁⋤A ℓ₂⋤A = _ ∧ refl-⊆ ∧ pcᴴ Σ₁≈Σ₂ (trans-⋤ (join-⊑₂ _ _) ℓ₁⋤A) (trans-⋤ (join-⊑₂ _ _) ℓ₂⋤A)
 
   tiniᴸ {{isV₁ᴾ ∧ _}} {{isV₂ᴾ ∧ _}} (Write x₁ x₂ pc⊑ℓ₁ ℓ'⊑ℓ₁ u₁) (Write x₁' x₂' pc⊑ℓ₂ ℓ''⊑ℓ₂ u₂) ⟨ Σ₁≈Σ₂ , μ≈ ⟩ θ₁≈θ₂ pc⊑A
-    with tiniᴾ x₁ x₁' θ₁≈θ₂ | tiniᴾ x₂ x₂' θ₁≈θ₂
-  ... | Ref-Iᴴ ℓ₁⋤A ℓ₂⋤A | v₁≈v₂ = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A Unit
+    with tiniᴾ x₁ x₁' θ₁≈θ₂
+  ... | Ref-Iᴴ ℓ₁⋤A ℓ₂⋤A = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A Unit
     where open _≈⟨_⟩ᴴ_ μ≈
           Σ₁≈Σ₁′ = updateᴴ-≈ˢ {{validˢ isV₁ᴾ}} ℓ₁⋤A
           Σ₂≈Σ₂′ = updateᴴ-≈ˢ {{validˢ isV₂ᴾ}} ℓ₂⋤A
           Σ₁'≈Σ₂' = square-≈ˢ-ι Σ₁≈Σ₂ Σ₁≈Σ₁′ Σ₂≈Σ₂′ ⊆ᴿ-ι ⊆ᴰ-ι
-  ... | Ref-Iᴸ ℓ⊑A n | Labeledᴴ ℓ'⋤A ℓ''⋤A  = ⊥-elim (trans-⋤ ℓ'⊑ℓ₁ ℓ'⋤A ℓ⊑A)
-  ... | Ref-Iᴸ ℓ⊑A n | Labeledᴸ x v₁≈v₂ = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A Unit
-    where Σ₁'≈Σ₂' = updateᴸ-≈ˢ Σ₁≈Σ₂ (update-≈ᴹ (getᴸ Σ₁≈Σ₂ ℓ⊑A) v₁≈v₂ u₁ u₂)
+  ... | Ref-Iᴸ ℓ⊑A n  = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ₁'≈Σ₂' , μ≈ ⟩ pc⊑A Unit
+    where v≈ = tiniᴾ x₂ x₂' θ₁≈θ₂
+          Σ₁'≈Σ₂' = updateᴸ-≈ˢ Σ₁≈Σ₂ (update-≈ᴹ (getᴸ Σ₁≈Σ₂ ℓ⊑A) v≈ u₁ u₂)
 
   tiniᴸ (LabelOfRef x refl) (LabelOfRef x₁ refl) Σ₁≈Σ₂ θ₁≈θ₂ pc⊑A with tiniᴾ x x₁ θ₁≈θ₂
   ... | Ref-Iᴸ ℓ⊑A n = _ ∧ refl-⊆ ∧ pcᴸ Σ₁≈Σ₂ (join-⊑' pc⊑A ℓ⊑A) (Lbl _)
@@ -237,7 +238,7 @@ mutual
       β′′ = β ∣ᴮ β′
       ⊆₁ = ∣ᴮ-⊆₁ β β′
       ⊆₂ = ∣ᴮ-⊆₂ β β′
-      μ≈′ = newᴸ-≈ᴴ (tiniᴾ x₁ x₂ θ₁≈θ₂) μ≈
+      μ≈′ = newᴸ-≈ᴴ (Labeledᴸ pc⊑A (tiniᴾ x₁ x₂ θ₁≈θ₂)) μ≈
       v≈ = Ref-S (↔-∈ᵗ ∥ μ₁ ∥ᴴ ∥ μ₂ ∥ᴴ)
 
   tiniᴸ (Read-FS x₁ ∈₁ refl) (Read-FS x₂ ∈₂ refl) ≈ᴾ θ₁≈θ₂ pc⊑A with tiniᴾ x₁ x₂ θ₁≈θ₂
@@ -245,11 +246,11 @@ mutual
     where open _≈⟨_⟩ᴾ_
           v≈ = readᴸ-≈ⱽ ∈β ∈₁ ∈₂ (heap-≈ᴴ ≈ᴾ)
 
-  tiniᴸ (Write-FS x₁ y₁ ∈₁ ⊑₁ refl w₁) (Write-FS x₂ y₂ ∈₂ ⊑₂ refl w₂) ⟨ Σ≈ , μ≈ ⟩ θ₁≈θ₂ pc⊑A
+  tiniᴸ (Write-FS x₁ y₁ ∈₁ ⊑₁ _ w₁) (Write-FS x₂ y₂ ∈₂ ⊑₂ _ w₂) ⟨ Σ≈ , μ≈ ⟩ θ₁≈θ₂ pc⊑A
     with tiniᴾ x₁ x₂ θ₁≈θ₂
   ... | Ref-S ∈β = _ ∧ refl-⊆ ∧ pcᴸ ⟨ Σ≈ , μ≈′ ⟩ pc⊑A Unit
     where v≈ = readᴸ-≈ⱽ ∈β ∈₁ ∈₂ μ≈
-          μ≈′ = writeᴸ-≈ᴴ μ≈ (≈ᴸ-⊔ _ (tiniᴾ y₁ y₂ θ₁≈θ₂)) w₁ w₂ ∈β
+          μ≈′ = writeᴸ-≈ᴴ μ≈ (Labeledᴸ pc⊑A (tiniᴾ y₁ y₂ θ₁≈θ₂)) w₁ w₂ ∈β
 
   tiniᴸ (LabelOfRef-FS x₁ ∈₁ refl) (LabelOfRef-FS x₂ ∈₂ refl) ≈ᴾ θ₁≈θ₂ pc⊑A with tiniᴾ x₁ x₂ θ₁≈θ₂
   ... | Ref-S ∈β = _ ∧ refl-⊆ ∧ label-of-≈ᶜ pc⊑A ≈ᴾ v≈

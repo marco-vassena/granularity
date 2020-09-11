@@ -9,6 +9,7 @@ open import CG.Syntax
 open import Relation.Binary.PropositionalEquality
 open import Data.Product hiding (_×_) renaming (_,_ to _^_)
 
+open import Data.Unit -- TODO: remove
 mutual
 
   -- Pure big-step semantics of the core of CG
@@ -128,11 +129,11 @@ mutual
   --------------------------------------------------------------------------------
   -- Flow Insensitive references
 
-    New : ∀ {Σ μ pc ℓ τ} {e : Expr Γ _} {v : Value τ} →
-          e ⇓ᴾ⟨ θ ⟩ (Labeled ℓ v) →
-          pc ⊑ ℓ →
-          let M = Σ ℓ in
-          Step θ ⟨ Σ , μ , pc , new e ⟩  ⟨ Σ [ ℓ ↦ snocᴹ M v ]ˢ , μ , pc , Refᴵ ℓ ∥ M ∥ᴹ ⟩
+    New : ∀ {Σ μ pc τ} {e : Expr Γ _} {v : Value τ} →
+          e ⇓ᴾ⟨ θ ⟩ v → -- (Labeled ℓ v) → -- Maybe also this should go without labeled
+          ⊤ → -- pc ⊑ ℓ →
+          let M = Σ pc in
+          Step θ ⟨ Σ , μ , pc , new e ⟩  ⟨ Σ [ pc ↦ snocᴹ M v ]ˢ , μ , pc , Refᴵ pc ∥ M ∥ᴹ ⟩
 
     Read : ∀ {Σ μ pc ℓ pc' n τ} {e : Expr _ (Ref I τ)} {v : Value τ } →
            e ⇓ᴾ⟨ θ ⟩ Refᴵ ℓ n →
@@ -140,11 +141,11 @@ mutual
            (eq : pc' ≡ pc ⊔ ℓ) →
            Step θ ⟨ Σ , μ , pc , ! e ⟩  ⟨ Σ , μ , pc' , v ⟩
 
-    Write : ∀ {Σ μ pc ℓ ℓ' n τ} {M' : Memory ℓ} {e₁ : Expr _ (Ref I τ)} {e₂ : Expr _ (Labeled τ)} {v₂ : Value τ} →
+    Write : ∀ {Σ μ pc ℓ n τ} {M' : Memory ℓ} {e₁ : Expr _ (Ref I τ)} {e₂ : Expr _ τ} {v₂ : Value τ} →
              e₁ ⇓ᴾ⟨ θ ⟩ Refᴵ ℓ n →
-             e₂ ⇓ᴾ⟨ θ ⟩ Labeled ℓ' v₂ →
+             e₂ ⇓ᴾ⟨ θ ⟩ v₂ → --  Labeled ℓ' v₂ →
              pc ⊑ ℓ →
-             ℓ' ⊑ ℓ →
+             ⊤ → -- ℓ' ⊑ ℓ →
              (up : M' ≔ (Σ ℓ) [ n ↦ v₂ ]ᴹ) →
              Step θ ⟨ Σ , μ , pc , e₁ ≔ e₂ ⟩ ⟨ Σ [ ℓ ↦ M' ]ˢ , μ , pc , （） ⟩
 
@@ -159,10 +160,10 @@ mutual
   --------------------------------------------------------------------------------
   -- Flow Sensitive references
 
-    New-FS : ∀ {Σ μ pc ℓ τ} {e : Expr Γ _} {v : Value τ} →
-             e ⇓ᴾ⟨ θ ⟩ (Labeled ℓ v) →
-             pc ⊑ ℓ →
-             Step θ ⟨ Σ , μ , pc , new e ⟩  ⟨ Σ , snocᴴ μ (v ^ ℓ) , pc , Refˢ ∥ μ ∥ᴴ ⟩
+    New-FS : ∀ {Σ μ pc τ} {e : Expr Γ _} {v : Value τ} →
+             e ⇓ᴾ⟨ θ ⟩ v → -- Labeled ℓ
+             ⊤ → -- pc ⊑ ℓ →
+             Step θ ⟨ Σ , μ , pc , new e ⟩  ⟨ Σ , snocᴴ μ (v ^ pc) , pc , Refˢ ∥ μ ∥ᴴ ⟩
 
     Read-FS : ∀ {Σ μ pc ℓ pc' n τ} {e : Expr _ (Ref S τ)} {v : Value τ} →
               e ⇓ᴾ⟨ θ ⟩ Refˢ n →
@@ -170,14 +171,14 @@ mutual
               (eq : pc' ≡ pc ⊔ ℓ) →
               Step θ ⟨ Σ , μ , pc , ! e ⟩  ⟨ Σ , μ , pc' , v ⟩
 
-    Write-FS : ∀ {Σ μ μ' pc ℓ ℓ' ℓ'' n τ} {e₁ : Expr _ (Ref S τ)}
-                 {e₂ : Expr _ (Labeled τ)} {v₂ v₂' : Value τ} →
+    Write-FS : ∀ {Σ μ μ' pc ℓ n τ} {e₁ : Expr _ (Ref S τ)}
+                 {e₂ : Expr _ τ} {v₂ v₂' : Value τ} →
              e₁ ⇓ᴾ⟨ θ ⟩ Refˢ n →
-             e₂ ⇓ᴾ⟨ θ ⟩ Labeled ℓ' v₂ →
+             e₂ ⇓ᴾ⟨ θ ⟩ v₂ → -- Labeled ℓ' v₂ →
              (n∈μ : n ↦ v₂' ^ ℓ ∈ᴴ μ) →
              pc ⊑ ℓ →
-             (ℓ'' ≡ pc ⊔ ℓ') →  -- Fix manuscript
-             (up : μ' ≔ μ [ n ↦ v₂ ^ ℓ'' ]ᴴ) →
+             ⊤ → -- (ℓ'' ≡ pc ⊔ ℓ') →  -- Fix manuscript
+             (up : μ' ≔ μ [ n ↦ v₂ ^ pc ]ᴴ) →
              Step θ ⟨ Σ , μ , pc , e₁ ≔ e₂ ⟩ ⟨ Σ , μ' , pc , （） ⟩
 
     LabelOfRef-FS : ∀ {Σ μ ℓ pc pc' n τ} {e : Expr _ (Ref S τ)} {v : Value τ} →
@@ -315,7 +316,7 @@ mutual
 
   stepᶠ-⊑ (Force x x₁) = step-⊑ x₁
 
-postulate write-fs-extra :  ∀ {Γ Σ μ μ' pc ℓ ℓ' τ}{θ : Env Γ} {M' : Memory ℓ}
-               {e₁ : Expr _ (Ref S τ)} {e₂ : Expr _ (Labeled τ)} {v₂ v₂' : Value τ}
-               → Step θ ⟨ Σ , μ , pc , e₁ ≔ e₂ ⟩ ⟨ Σ , μ' , pc , （） ⟩
-               → e₂ ⇓ᴾ⟨ θ ⟩ Labeled ℓ' v₂ → pc ⊑ ℓ'
+-- postulate write-fs-extra :  ∀ {Γ Σ μ μ' pc ℓ ℓ' τ}{θ : Env Γ} {M' : Memory ℓ}
+--                {e₁ : Expr _ (Ref S τ)} {e₂ : Expr _ (Labeled τ)} {v₂ v₂' : Value τ}
+--                → Step θ ⟨ Σ , μ , pc , e₁ ≔ e₂ ⟩ ⟨ Σ , μ' , pc , （） ⟩
+--                → e₂ ⇓ᴾ⟨ θ ⟩ Labeled ℓ' v₂ → pc ⊑ ℓ'

@@ -97,13 +97,13 @@ mutual
    -- Memory operations
 
     -- Creates a new mutable reference at a given security level
-    new : ∀ {τ s} → Expr Γ (Labeled τ) → Thunk Γ (LIO (Ref s τ))
+    new : ∀ {τ s} → Expr Γ τ → Thunk Γ (LIO (Ref s τ))
 
     -- Reads the content of a mutable reference
     !_ : ∀ {τ s} → Expr Γ (Ref s τ) → Thunk Γ (LIO τ)
 
     -- Overvwrites the content of a mutable reference
-    _≔_ : ∀ {τ s} → Expr Γ (Ref s τ) → Expr Γ (Labeled τ) → Thunk Γ (LIO unit)
+    _≔_ : ∀ {τ s} → Expr Γ (Ref s τ) → Expr Γ τ → Thunk Γ (LIO unit)
 
     -- Retrieve the label of a labeled reference
     labelOfRef : ∀ {τ s} → Expr Γ (Ref s τ) → Thunk Γ (LIO 𝓛)
