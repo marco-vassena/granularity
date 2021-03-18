@@ -6,7 +6,7 @@ open import Lattice
 module FG2CG.Syntax {{𝑳 : Lattice}} where
 
 open import CG as CG
-open import FG as FG hiding (_↑¹ ; _↑² ; here ; there ; drop ; cons ; refl-⊆)
+open import FG as FG hiding (_↑¹ ; here ; there ; drop ; cons ; refl-⊆)
 open import FG2CG.Types public
 
 mutual

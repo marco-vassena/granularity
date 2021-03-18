@@ -6,9 +6,66 @@ open import Lattice
 module FG2CG.Correct {{𝑳 : Lattice}} where
 
 open import CG as CG hiding (step-⊑)
-open import FG as FG hiding (_↑¹ ; _↑² ; here ; there ; drop ; cons ; refl-⊆ )
-open import FG2CG.Syntax
 open import Relation.Binary.PropositionalEquality
+
+--------------------------------------------------------------------------------
+-- Syntactic sugar and helper lemmas
+
+-- Force a thunk
+⌞_⌟ᶠ : ∀ {τ Γ Σ Σ' pc pc' v} {t : Thunk Γ (LIO τ)} {θ : Env Γ}
+        → ⟨ Σ , pc , t ⟩ ⇓⟨ θ ⟩ ⟨ Σ' , pc' , v ⟩
+        → ⟨ Σ , pc , ⌞ t ⌟ᵀ ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc' , v ⟩
+⌞_⌟ᶠ = Force SThunk
+
+-- Force bind.
+Bindᶠ : ∀ {Γ τ₁ τ₂ Σ Σ' Σ'' pc pc' pc'' v v₁ θ} {e₁ : Expr Γ (LIO τ₁)} {e₂ : Expr _ (LIO τ₂)}
+           → ⟨ Σ , pc , e₁ ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc' , v₁ ⟩
+           → ⟨ Σ' , pc' , e₂ ⟩ ⇓ᶠ⟨ v₁ ∷ θ ⟩ ⟨ Σ'' , pc'' , v ⟩
+           → ⟨ Σ , pc , ⌞ bind e₁ e₂ ⌟ᵀ ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ'' , pc'' , v ⟩
+Bindᶠ x₁ x₂ = ⌞ Bind x₁ x₂ ⌟ᶠ
+
+-- To labeled in forcing semantics
+ToLabeledᶠ  : ∀ {Γ Σ Σ' pc pc' τ v θ} {t : Thunk Γ (LIO τ)}
+              → ⟨ Σ , pc , ⌞ t ⌟ᵀ ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc' , v ⟩
+              → ⟨ Σ , pc , ⌞ toLabeled ⌞ t ⌟ᵀ ⌟ᵀ ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc , Labeled pc' v ⟩
+ToLabeledᶠ x = ⌞ ToLabeled x ⌟ᶠ
+
+-- Force Wken
+Wkenᶠ : ∀ {Γ Γ' Σ Σ' pc pc' τ v θ} {e : Expr Γ (LIO τ)} (θ' : Env Γ')
+        → ⟨ Σ , pc , e ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc' , v ⟩
+        → ⟨ Σ , pc , wken e (drop-⊆₂ Γ Γ')  ⟩ ⇓ᶠ⟨ θ' ++ᴱ θ ⟩ ⟨ Σ' , pc' , v ⟩
+Wkenᶠ {Γ' = Γ'} θ'' (Force x x₁) = Force (Wken (drop-⊆₂ _ Γ') x) x₁
+
+-- Pure execution under weakening
+⇓¹ : ∀ {Γ τ τ₁ v θ} {v₁ : Value τ₁} {e : Expr Γ τ}
+     → e ⇓ᴾ⟨ θ ⟩ v
+     → e ↑¹ ⇓ᴾ⟨ v₁ ∷ θ ⟩ v
+⇓¹ x = Wken (drop refl-⊆) x
+
+If₁ : ∀ {τ Γ θ v} {e₁ : Expr Γ Bool} {e₂ e₃ : Expr Γ τ} →
+        e₁ ⇓ᴾ⟨ θ ⟩ (inl （）) →
+        e₂ ⇓ᴾ⟨ θ ⟩ v →
+        if e₁ then e₂ else e₃ ⇓ᴾ⟨ θ ⟩ v
+If₁ x₁ x₂ = Case₁ x₁ (⇓¹ x₂)
+
+If₂ : ∀ {τ Γ θ v} {e₁ : Expr Γ Bool} {e₂ e₃ : Expr Γ τ} →
+        e₁ ⇓ᴾ⟨ θ ⟩ (inr （）) →
+        e₃ ⇓ᴾ⟨ θ ⟩ v →
+        if e₁ then e₂ else e₃ ⇓ᴾ⟨ θ ⟩ v
+If₂ x₁ x₂ = Case₂ x₁ (⇓¹ x₂)
+
+↑¹-⇓ᶠ  :  ∀ {Γ  Σ Σ' pc pc' τ τ' v θ} {e : Expr Γ (LIO τ)} {v₁ : Value τ'}
+        → ⟨ Σ , pc , e ⟩ ⇓ᶠ⟨ θ ⟩ ⟨ Σ' , pc' , v ⟩
+        → ⟨ Σ , pc , e ↑¹ ⟩ ⇓ᶠ⟨ v₁ ∷  θ ⟩ ⟨ Σ' , pc' , v ⟩
+↑¹-⇓ᶠ {v₁ = v₁}  = Wkenᶠ (v₁ ∷ [])
+
+⇓-with : ∀ {τ Γ Σ pc c₁ c₂ θ} {t : Thunk Γ (LIO τ)} →
+            ⟨ Σ , pc , t ⟩ ⇓⟨ θ ⟩ c₁ →
+            c₁ ≡ c₂ → ⟨ Σ , pc , t ⟩ ⇓⟨ θ ⟩ c₂
+⇓-with x refl = x
+
+open import FG as FG hiding (_↑¹ ; here ; there ; drop ; cons ; refl-⊆ )
+open import FG2CG.Syntax
 
 --------------------------------------------------------------------------------
 -- Helping lemmas for contexts.
@@ -166,7 +223,7 @@ mutual
   fg2cg {pc = pc} (New  {ℓ = ℓ} {Σ' = Σ'} {r = r} x) =
     ToLabeled
       (Bindᶠ (fg2cgᶠ x)
-      ⌞ ⇓-with′ (New (Var here) (FG.step-⊑ x)) eq ⌟ᶠ)
+      ⌞ ⇓-with (New (Var here) (FG.step-⊑ x)) eq ⌟ᶠ)
 
    where memory-≡ = ∷ᴿ-≡ r (Σ' ℓ)
          value-≡ = cong₂ Ref refl (∥ Σ' ∥-≡ ℓ)
@@ -184,7 +241,7 @@ mutual
         (Bindᶠ (fg2cgᶠ x)
         (Bindᶠ (↑¹-⇓ᶠ (fg2cgᶠ x₁))
         (Bindᶠ ⌞ Unlabel (Var (there here)) (sym (ub' p)) ⌟ᶠ
-        ⌞ ⇓-with′ (Write (Var here) (Var (there here)) (trans-⊑ (step-⊑ x₁) ℓ₂⊑ℓ) ℓ₂⊑ℓ (write-≡ᴹ x₂)) eq ⌟ᶠ)))))
+        ⌞ ⇓-with (Write (Var here) (Var (there here)) (trans-⊑ (step-⊑ x₁) ℓ₂⊑ℓ) ℓ₂⊑ℓ (write-≡ᴹ x₂)) eq ⌟ᶠ)))))
     (ToLabeledᶠ ⌞ Return Unit ⌟ᶠ)
 
     where eq = cong (λ Σ → ⟨ Σ , pc , （） ⟩) (CG.store-≡ (update-≡ˢ refl))

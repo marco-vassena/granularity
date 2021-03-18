@@ -151,33 +151,8 @@ mutual
   c₁ ⇓⟨ θ , pc ⟩ c₂ = Step θ pc c₁ c₂
 
 --------------------------------------------------------------------------------
--- Shorthands
 
-Wken′ : ∀ {Γ Γ' Σ Σ' pc τ v θ} {e : Expr Γ τ} (θ' : Env Γ')
-        → ⟨ Σ , e ⟩ ⇓⟨ θ , pc ⟩ ⟨ Σ' , v ⟩
-        → ⟨ Σ , wken e (drop-⊆₂ Γ Γ')  ⟩ ⇓⟨ θ' ++ᴱ θ , pc ⟩ ⟨ Σ' , v ⟩
-Wken′  {Γ' = Γ'} θ'' x = Wken (drop-⊆₂ _ Γ') x
-
--- Execution under weakening
-
-↑¹-⇓  :  ∀ {Γ  Σ Σ' pc τ τ' v θ} {e : Expr Γ τ} {v₁ : Value τ'}
-        → ⟨ Σ , e ⟩ ⇓⟨ θ , pc ⟩ ⟨ Σ' , v ⟩
-        → ⟨ Σ , e ↑¹ ⟩ ⇓⟨ v₁ ∷  θ , pc ⟩ ⟨ Σ' , v ⟩
-↑¹-⇓ {v₁ = v₁}  = Wken′ (v₁ ∷ [])
-
-↑²-⇓  :  ∀ {Γ  Σ Σ' pc τ τ₁ τ₂ v θ} {e : Expr Γ τ} {v₁ : Value τ₁} {v₂ : Value τ₂}
-        → ⟨ Σ , e ⟩ ⇓⟨ θ , pc ⟩ ⟨ Σ' , v ⟩
-        → ⟨ Σ , e ↑² ⟩ ⇓⟨ v₁ ∷ v₂ ∷ θ , pc ⟩ ⟨ Σ' , v ⟩
-↑²-⇓ {v₁ = v₁} {v₂ = v₂} = Wken′ (v₁ ∷ v₂ ∷ [])
-
-⇓-with : ∀ {τ Γ c₂ c₂' θ pc} {c₁ : IConf Γ τ} → c₁ ⇓⟨ θ , pc ⟩ c₂ → c₂ ≡ c₂' → c₁ ⇓⟨ θ , pc ⟩ c₂'
-⇓-with x refl = x
-
---------------------------------------------------------------------------------
-
-open Value
 open import Data.Product
-open import Relation.Binary.PropositionalEquality
 
 -- The result of the value is at least as senstive as the program
 -- counter.

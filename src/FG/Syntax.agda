@@ -161,22 +161,11 @@ IConf Γ τ = Conf (Expr Γ τ)
 FConf : Ty → Set
 FConf τ = Conf (Value τ)
 
--- Projections
-
-expr : ∀ {Γ τ} → IConf Γ τ → Expr Γ τ
-expr = Conf.term
-
-val : ∀ {τ} → FConf τ → Value τ
-val = Conf.term
-
 --------------------------------------------------------------------------------
 -- Weakening once and twice.
 
 _↑¹ : ∀ {Γ τ τ₁} → Expr Γ τ → Expr (τ₁ ∷ Γ) τ
 e ↑¹ = wken e (drop refl-⊆)
-
-_↑² : ∀ {Γ τ τ₁ τ₂} → Expr Γ τ → Expr (τ₁ ∷ τ₂ ∷ Γ) τ
-e ↑² = wken e (drop (drop refl-⊆))
 
 --------------------------------------------------------------------------------
 

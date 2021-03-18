@@ -1,2 +1,7 @@
 env
 *.agdai
+*.agda~
+\#*\#
+.*.agda
+.DS_Store
+*.html

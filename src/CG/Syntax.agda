@@ -178,25 +178,11 @@ TConf Γ τ = Conf (Thunk Γ τ)
 FConf : Ty → Set
 FConf τ = Conf (Value τ)
 
--- Projections
-
-expr : ∀ {Γ τ} → EConf Γ τ → Expr Γ τ
-expr = Conf.term
-
-thunk :  ∀ {Γ τ} → TConf Γ τ → Thunk Γ τ
-thunk = Conf.term
-
-val : ∀ {τ} → FConf τ → Value τ
-val = Conf.term
-
 --------------------------------------------------------------------------------
 -- Weakening once and twice.
 
 _↑¹ : ∀ {Γ τ τ₁} → Expr Γ τ → Expr (τ₁ ∷ Γ) τ
 e ↑¹ = wken e (drop refl-⊆)
-
-_↑² : ∀ {Γ τ τ₁ τ₂} → Expr Γ τ → Expr (τ₂ ∷ τ₁ ∷ Γ) τ
-e ↑² = wken e (drop (drop refl-⊆))
 
 --------------------------------------------------------------------------------
 -- Environment operations and proofs

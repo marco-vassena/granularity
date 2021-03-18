@@ -4,7 +4,7 @@ open import Lattice as L
 
 module CG2FG.Syntax {{𝑳 : Lattice}} where
 
-open import CG as CG hiding (_↑¹ ; _↑² ; here ; there ; drop ; cons ; refl-⊆)
+open import CG as CG hiding (_↑¹ ; here ; there ; drop ; cons ; refl-⊆)
 open import FG as FG
 open import CG2FG.Types public
 
