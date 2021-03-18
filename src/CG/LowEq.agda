@@ -58,7 +58,8 @@ mutual
                  ℓ₂ ⋤ A →
                  Labeled ℓ₁ v₁ ≈ⱽ Labeled ℓ₂ v₂
 
-    Refᴸ : ∀ {ℓ τ} → (ℓ⊑A : ℓ ⊑ A) (n : ℕ) →
+    Refᴸ : ∀ {ℓ τ} →
+             (ℓ⊑A : ℓ ⊑ A) (n : ℕ) →
              Ref {τ = τ} ℓ n ≈ⱽ Ref ℓ n
 
     Refᴴ : ∀ {ℓ₁ ℓ₂ n₁ n₂ τ} →
@@ -181,34 +182,3 @@ mutual
 ≈ᴱ-isEquivalence = record { refl = refl-≈ᴱ ; sym = sym-≈ᴱ ; trans = trans-≈ᴱ }
 
 open S.Props ≈ⱽ-isEquivalence public
-
-≈ᴬ-isEquivalence : ∀ {A : Set} → IsEquivalence (_≈ᴬ_ {A})
-≈ᴬ-isEquivalence =
-  record { refl = ⟨ refl-≈ˢ , refl , refl ⟩
-         ; sym = λ { ⟨ Σ₁≈Σ₂ , pc₁≡pc₂ , e₁≡e₂ ⟩ → ⟨ sym-≈ˢ Σ₁≈Σ₂ , sym pc₁≡pc₂ , sym e₁≡e₂ ⟩ }
-         ; trans = λ {⟨ Σ₁≈Σ₂ , pc₁≡pc₂ , e₁≡e₂ ⟩ ⟨ Σ₂≈Σ₃ , pc₂≡pc₃ , e₂≡e₃ ⟩ →
-                     ⟨ trans-≈ˢ Σ₁≈Σ₂ Σ₂≈Σ₃ , trans pc₁≡pc₂ pc₂≡pc₃ , trans e₁≡e₂ e₂≡e₃ ⟩ }
-         }
-
-refl-≈ᶜ : ∀ {τ} {c : FConf τ} → c ≈ᶜ c
-refl-≈ᶜ {c = ⟨ Σ , pc , v ⟩} with pc ⊑? A
-... | yes pc⊑A = pcᴸ refl-≈ˢ  pc⊑A refl-≈ⱽ
-... | no pc⋤A = pcᴴ refl-≈ˢ pc⋤A pc⋤A
-
-sym-≈ᶜ : ∀ {τ} {c₁ c₂ : FConf τ} → c₁ ≈ᶜ c₂ → c₂ ≈ᶜ c₁
-sym-≈ᶜ (pcᴸ Σ≈ pc⊑A v≈) = pcᴸ (sym-≈ˢ Σ≈) pc⊑A (sym-≈ⱽ v≈)
-sym-≈ᶜ (pcᴴ Σ≈ pc₁⋤A pc₂⋤A) = pcᴴ (sym-≈ˢ Σ≈) pc₂⋤A pc₁⋤A
-
-trans-≈ᶜ : ∀ {τ} {c₁ c₂ c₃ : FConf τ} → c₁ ≈ᶜ c₂ → c₂ ≈ᶜ c₃ → c₁ ≈ᶜ c₃
-trans-≈ᶜ (pcᴸ Σ≈ pc⊑A v≈) (pcᴸ Σ≈₁ pc⊑A₁ v≈₁) = pcᴸ (trans-≈ˢ Σ≈ Σ≈₁) pc⊑A (trans-≈ⱽ v≈ v≈₁)
-trans-≈ᶜ (pcᴸ Σ≈ pc⊑A v≈) (pcᴴ Σ≈₁ pc₁⋤A pc₂⋤A) = ⊥-elim (pc₁⋤A pc⊑A)
-trans-≈ᶜ (pcᴴ Σ≈ pc₁⋤A pc₂⋤A) (pcᴸ Σ≈₁ pc⊑A v≈) = ⊥-elim (pc₂⋤A pc⊑A)
-trans-≈ᶜ (pcᴴ Σ≈ pc₁⋤A pc₂⋤A) (pcᴴ Σ≈₁ pc₁⋤A₁ pc₂⋤A₁) = pcᴴ (trans-≈ˢ Σ≈ Σ≈₁) pc₁⋤A pc₂⋤A₁
-
--- Projects low-equivalence for stores
-≈ᶜ-≈ˢ : ∀ {τ} {c₁ c₂ : FConf τ} → c₁ ≈ᶜ c₂ → store c₁ ≈ˢ store c₂
-≈ᶜ-≈ˢ (pcᴸ x x₁ x₂) = x
-≈ᶜ-≈ˢ (pcᴴ x x₁ x₂) = x
-
-≈ᶜ-isEquivalence : ∀ {τ} → IsEquivalence (_≈ᶜ_ {τ})
-≈ᶜ-isEquivalence = record { refl = refl-≈ᶜ ; sym = sym-≈ᶜ ; trans = trans-≈ᶜ }
