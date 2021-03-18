@@ -159,7 +159,6 @@ open import Data.Product
 step-⊑ : ∀ {Σ Σ' Γ τ pc} {e : Expr Γ τ} {v : Value τ} {θ : Env Γ} →
              ⟨ Σ , e ⟩ ⇓⟨ θ , pc ⟩ ⟨ Σ' , v ⟩ →
              pc ⊑ (lbl v)
-
 step-⊑ {pc = pc} {θ = θ} (Var τ∈Γ eq) rewrite eq = join-⊑₁ pc (lbl (θ !! τ∈Γ))
 step-⊑ Unit = refl-⊑
 step-⊑ (Lbl ℓ) = refl-⊑
