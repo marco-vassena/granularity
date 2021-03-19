@@ -1,0 +1,51 @@
+step-≈ˢ : ∀ {τ Γ θ pc} {c : IConf Γ τ} {c' : FConf τ} →
+             let ⟨ Σ , _ ⟩ = c
+                 ⟨ Σ' , _ ⟩ = c' in
+               c ⇓⟨ θ , pc ⟩ c' →
+               pc ⋤ A →
+               Σ ≈ˢ Σ'
+step-≈ˢ (Var τ∈Γ x) pc⋤A = refl-≈ˢ
+step-≈ˢ Unit pc⋤A = refl-≈ˢ
+step-≈ˢ (Lbl ℓ) pc⋤A = refl-≈ˢ
+step-≈ˢ (Test₁ x x₁ x₂ refl) pc⋤A = trans-≈ˢ Σ₁≈Σ₂′ Σ₁≈Σ₂′′
+  where Σ₁≈Σ₂′ = step-≈ˢ x pc⋤A
+        Σ₁≈Σ₂′′ = step-≈ˢ x₁ pc⋤A
+step-≈ˢ (Test₂ x x₁ x₂ refl) pc⋤A = trans-≈ˢ Σ₁≈Σ₂′ Σ₁≈Σ₂′′
+  where Σ₁≈Σ₂′ = step-≈ˢ x pc⋤A
+        Σ₁≈Σ₂′′ = step-≈ˢ x₁ pc⋤A
+step-≈ˢ Fun pc⋤A = refl-≈ˢ
+step-≈ˢ (App x x₁ refl x₃) pc⋤A = trans-≈ˢ Σ₁≈Σ₂′ (trans-≈ˢ Σ₁≈Σ₂′′ Σ₁≈Σ₂′′′)
+  where Σ₁≈Σ₂′ = step-≈ˢ x pc⋤A
+        Σ₁≈Σ₂′′ = step-≈ˢ x₁ pc⋤A
+        Σ₁≈Σ₂′′′ = step-≈ˢ x₃ (trans-⋤ (join-⊑₁ _ _) pc⋤A)
+step-≈ˢ (Wken p x) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (Inl x) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (Inr x) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (Case₁ x refl x₂) pc⋤A = trans-≈ˢ Σ≈Σ' Σ'≈Σ''
+  where Σ≈Σ' = step-≈ˢ x pc⋤A
+        Σ'≈Σ'' = step-≈ˢ x₂ (trans-⋤ (join-⊑₁ _ _) pc⋤A)
+step-≈ˢ (Case₂ x refl x₂) pc⋤A = trans-≈ˢ Σ≈Σ' Σ'≈Σ''
+  where Σ≈Σ' = step-≈ˢ x pc⋤A
+        Σ'≈Σ'' = step-≈ˢ x₂ (trans-⋤ (join-⊑₁ _ _) pc⋤A)
+step-≈ˢ (Pair x x₁) pc⋤A = trans-≈ˢ Σ≈Σ' Σ'≈Σ''
+  where Σ≈Σ' = step-≈ˢ x pc⋤A
+        Σ'≈Σ'' = step-≈ˢ x₁ pc⋤A
+step-≈ˢ (Fst x x₁) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (Snd x x₁) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (LabelOf x) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ GetLabel pc⋤A = refl-≈ˢ
+step-≈ˢ (Taint refl x₁ x₂ pc'⊑pc'') pc⋤A = trans-≈ˢ Σ≈Σ' Σ'≈Σ''
+  where Σ≈Σ' = step-≈ˢ x₁ pc⋤A
+        Σ'≈Σ'' = step-≈ˢ x₂ (trans-⋤ (join-⊑₁ _ _) pc⋤A)
+step-≈ˢ (LabelOfRef x eq) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (New x) pc⋤A = trans-≈ˢ Σ≈Σ' Σ'≈Σ''
+  where Σ≈Σ' = step-≈ˢ x pc⋤A
+        Σ'≈Σ'' = updateᴴ-≈ˢ _ _ (trans-⋤ (step-⊑ x) pc⋤A)
+step-≈ˢ (Read x₁ x₂ eq) pc⋤A = step-≈ˢ x₁ pc⋤A
+step-≈ˢ (Write x ℓ'⊑pc x₂ ℓ₂⊑ℓ x₃) pc⋤A = trans-≈ˢ Σ≈Σ' (trans-≈ˢ Σ'≈Σ'' Σ''≈Σ''')
+  where pc⊑ℓ = trans-⊑ (step-⊑ x₂) ℓ₂⊑ℓ
+        Σ≈Σ' = step-≈ˢ x pc⋤A
+        Σ'≈Σ'' = step-≈ˢ x₂ pc⋤A
+        Σ''≈Σ''' = updateᴴ-≈ˢ _ _ (trans-⋤ pc⊑ℓ pc⋤A)
+step-≈ˢ (Id x) pc⋤A = step-≈ˢ x pc⋤A
+step-≈ˢ (UnId x₁ x₂) pc⋤A = step-≈ˢ x₁ pc⋤A

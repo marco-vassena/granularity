@@ -78,6 +78,23 @@ mutual
 Refᴸ′ : ∀ {τ ℓ n₁ n₂} → ℓ ⊑ A → n₁ ≡ n₂ → Ref {τ = τ} ℓ n₁ ≈ⱽ Ref ℓ n₂
 Refᴸ′ ℓ⊑A refl = Refᴸ ℓ⊑A _
 
+--------------------------------------------------------------------------------
+-- Lemmas on L-equivalent environments.
+
+-- Lookup in L-equivalent envs gives L-equivalent values
+lookup-≈ⱽ : ∀ {τ Γ θ₁ θ₂} → (τ∈Γ : τ ∈ Γ) → θ₁ ≈ᴱ θ₂ → (θ₁ !! τ∈Γ) ≈ⱽ (θ₂ !! τ∈Γ)
+lookup-≈ⱽ {θ₁ = v₁ ∷ θ₁} {v₂ ∷ θ₂} here (v₁≈v₂ ∷ θ₁≈θ₂) = v₁≈v₂
+lookup-≈ⱽ {θ₁ = v₁ ∷ θ₁} {v₂ ∷ θ₂} (there τ∈Γ) (v₁≈v₂ ∷ θ₁≈θ₂) = lookup-≈ⱽ τ∈Γ θ₁≈θ₂
+
+-- Slicing L-equivalent envs gives gives L-equivalent envs.
+slice-≈ᴱ : ∀ {Γ₁ Γ₂} {θ₁ θ₂ : Env Γ₂} →
+                 θ₁ ≈ᴱ θ₂ →
+                 (Γ₁⊆Γ₂ : Γ₁ ⊆ Γ₂) →
+                 slice θ₁ Γ₁⊆Γ₂ ≈ᴱ slice θ₂ Γ₁⊆Γ₂
+slice-≈ᴱ [] base = []
+slice-≈ᴱ (v₁≈v₂ ∷ θ₁≈θ₂) (cons p) = v₁≈v₂ ∷ slice-≈ᴱ θ₁≈θ₂ p
+slice-≈ᴱ (v₁≈v₂ ∷ θ₁≈θ₂) (drop p) = slice-≈ᴱ θ₁≈θ₂ p
+
 -- Derive low-equivalence for stores and memories.
 open import Generic.Store.LowEq {Ty} {Value} _≈ⱽ_  A as S public
 

@@ -18,23 +18,6 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
 --------------------------------------------------------------------------------
--- Lemmas on L-equivalent environments.
-
--- Lookup in L-equivalent envs gives L-equivalent values
-lookup-≈ⱽ : ∀ {τ Γ θ₁ θ₂} → (τ∈Γ : τ ∈ Γ) → θ₁ ≈ᴱ θ₂ → (θ₁ !! τ∈Γ) ≈ⱽ (θ₂ !! τ∈Γ)
-lookup-≈ⱽ {θ₁ = v₁ ∷ θ₁} {v₂ ∷ θ₂} here (v₁≈v₂ ∷ θ₁≈θ₂) = v₁≈v₂
-lookup-≈ⱽ {θ₁ = v₁ ∷ θ₁} {v₂ ∷ θ₂} (there τ∈Γ) (v₁≈v₂ ∷ θ₁≈θ₂) = lookup-≈ⱽ τ∈Γ θ₁≈θ₂
-
--- Slicing L-equivalent envs gives gives L-equivalent envs.
-slice-≈ᴱ : ∀ {Γ₁ Γ₂} {θ₁ θ₂ : Env Γ₂} →
-                 θ₁ ≈ᴱ θ₂ →
-                 (Γ₁⊆Γ₂ : Γ₁ ⊆ Γ₂) →
-                 slice θ₁ Γ₁⊆Γ₂ ≈ᴱ slice θ₂ Γ₁⊆Γ₂
-slice-≈ᴱ [] base = []
-slice-≈ᴱ (v₁≈v₂ ∷ θ₁≈θ₂) (cons p) = v₁≈v₂ ∷ slice-≈ᴱ θ₁≈θ₂ p
-slice-≈ᴱ (v₁≈v₂ ∷ θ₁≈θ₂) (drop p) = slice-≈ᴱ θ₁≈θ₂ p
-
---------------------------------------------------------------------------------
 mutual
 
   -- High forcing steps preserve low-equivalence of stores
@@ -45,7 +28,6 @@ mutual
                  pc ⋤ A →
                  Σ ≈ˢ Σ'
   stepᶠ-≈ˢ (Force x x₁) pc⋤A = step-≈ˢ x₁ pc⋤A
-
   -- High steps preserve low-equivalence of stores
   step-≈ˢ : ∀ {τ Γ θ} {c : TConf Γ (LIO τ)} {c' : FConf τ} →
                let ⟨ Σ , pc , t ⟩ = c
