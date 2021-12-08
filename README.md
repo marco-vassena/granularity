@@ -1,7 +1,7 @@
 # From Fine- to Coarse-Grained Dynamic Information Flow Control and Back - Mechanized Proofs
 
 This repository contains Agda mechanized proofs of the paper [From Fine- to Coarse-Grained Dynamic Information Flow Control and Back](https://doi.org/10.1145/3290389) by Vassena, Russo,
-Vineet, Deepak, Stefan.
+Vineet, Deepak, Stefan. The branch "fs-refs" contains the version of the languages extended with flow-sensitive references.
 
 ## Checking the proofs
 
